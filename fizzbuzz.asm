@@ -9,48 +9,48 @@ section .text
 	extern printf
 
 main:
-	mov eax, 0
+	mov eax, 0				; start counter
 
 iterate:
-	inc eax
+	inc eax					; increment counter
 
-	mov ecx, 15
-	mov ebx, fizzbuzz
+	mov ecx, 15				; divisible by 15?
+	mov ebx, fizzbuzz		; then fizzbuzz
 	call compare
 
-	mov ecx, 3
-	mov ebx, fizz
+	mov ecx, 3				; divisible by 3?
+	mov ebx, fizz			; then fizz
 	call compare
 
-	mov ecx, 5
-	mov ebx, buzz
+	mov ecx, 5				; divisible by 5?
+	mov ebx, buzz			; then buzz
 	call compare
 
-	mov ebx, num
+	mov ebx, num			; otherwise, print the number
 
 print:
-	push eax
-	mov ebp, esp
-	push ebx
-	call printf
-	mov esp, ebp
-	pop eax
+	push eax				; preserve counter
+	mov ebp, esp			; preserve esp
+	push ebx				; push string
+	call printf				; print string
+	mov esp, ebp			; restore esp
+	pop eax					; restore eax
 
-	cmp eax, 100
-	jl iterate
+	cmp eax, 100			; counter < 100?
+	jl iterate				; then repeat
 
 exit:
 	mov eax, 1				; sys_exit
 	mov ebx, 0				; success
-	int 0x80
+	int 0x80				; syscall
 
 compare:
 	xor edx, edx
-	push eax
-	div ecx
-	pop eax
-	cmp edx, 0
+	push eax				; preserve counter
+	div ecx					; divide counter by value
+	pop eax					; restore counter
+	cmp edx, 0				; modulo is 0?
 	jne notEqual
-		jmp print
+		jmp print			; then print
 	notEqual:
 	ret
