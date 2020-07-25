@@ -49,7 +49,7 @@ compare:
 	push eax				; preserve counter
 	div ecx					; divide counter by value
 	pop eax					; restore counter
-	cmp edx, 0				; modulo is 0?
+	cmp edx, 0				; remainder is 0?
 	jne notEqual
 		jmp print			; then print
 	notEqual:
