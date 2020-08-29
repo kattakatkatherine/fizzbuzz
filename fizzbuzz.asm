@@ -50,7 +50,5 @@ compare:
 	div ecx					; divide counter by value
 	pop eax					; restore counter
 	cmp edx, 0				; remainder is 0?
-	jne notEqual
-		jmp print			; then print
-	notEqual:
-	ret
+	je print				; then print
+	ret						; return
