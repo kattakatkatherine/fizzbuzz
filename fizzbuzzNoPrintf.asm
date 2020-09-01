@@ -3,12 +3,10 @@ section .data
 			  dd "Buzz", 4, 5
 
 	fzn equ 2				; number of phrases
+	base equ 10				; print in base 10
 	min equ 1				; start at 1
-	max equ 100				; end at 100
-	base equ 10				; print output in base 10
+	max equ 100000000				; end at 100
 	
-	newln db 0x0a
-
 section .text
 	global _start
 
@@ -17,23 +15,22 @@ _start:
 	mov ebp, esp			; preserve esp
 
 .loop:
-	mov esp, ebp			; restore esp
 	cmp eax, max			; counter at max? 
 	jnl .exit				; then exit
-	inc eax					; increment counter
+
+	mov esp, ebp			; restore esp
 	xor ebx, ebx			; clear fizz/buzz indicator
-	xor edx, edx			; clear offset
+	mov edx, fizzbuzz		; set array
+	inc eax					; increment counter
 
 .top:
-	mov ecx, edx				; offset
-	add ecx, fizzbuzz			; add pointer to offset
-	push ecx					; string
-	push dword [fizzbuzz+4+edx]	; length
-	mov ecx, [fizzbuzz+8+edx]	; divisible?
-	call .compare				; then print
+	push edx				; string
+	push dword [4+edx]		; length
+	mov ecx, [8+edx]		; divisible?
+	call .compare			; then print
 	
 	add edx, 12				; add offset
-	cmp edx, fzn*12			; done?
+	cmp edx, fizzbuzz+fzn*12; done?
 	jl .top					; repeat
 
 	cmp ebx, 0				; fizz/buzz?
@@ -65,11 +62,11 @@ _start:
 
 	mov esp, ebp			; restore esp
 	loop .printnum			; loop
-	mov esp, ebp			; restore esp
 	popad					; restore registers
 
 .newline:
-	push dword newln		; newline
+	mov [esp], dword 0x0a	; move newline to esp
+	push esp				; newline
 	push 1					; length
 	call .print				; print
 
