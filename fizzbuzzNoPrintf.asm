@@ -1,12 +1,8 @@
 section .data
-	fizz db "Fizz"			; fizz when n%3=0
-	flen equ $ - fizz
-	fval equ 3
+	fizzbuzz: dd "Fizz", 4, 3 
+			  dd "Buzz", 4, 5
 
-	buzz db "Buzz"			; buzz when n%5=0
-	blen equ $ - buzz
-	bval equ 5
-
+	fzn equ 2				; number of phrases
 	min equ 1				; start at 1
 	max equ 100				; end at 100
 	base equ 10				; print output in base 10
@@ -26,16 +22,19 @@ _start:
 	jnl .exit				; then exit
 	inc eax					; increment counter
 	xor ebx, ebx			; clear fizz/buzz indicator
+	xor edx, edx			; clear offset
 
-	push fizz				; "Fizz"
-	push flen				; length
-	mov ecx, fval			; divisible?
-	call .compare			; then print
-
-	push buzz				; "Buzz"
-	push blen				; length
-	mov ecx, bval			; divisible?
-	call .compare			; then print
+.top:
+	mov ecx, edx				; offset
+	add ecx, fizzbuzz			; add pointer to offset
+	push ecx					; string
+	push dword [fizzbuzz+4+edx]	; length
+	mov ecx, [fizzbuzz+8+edx]	; divisible?
+	call .compare				; then print
+	
+	add edx, 12				; add offset
+	cmp edx, fzn*12			; done?
+	jl .top					; repeat
 
 	cmp ebx, 0				; fizz/buzz?
 	jne .newline			; then repeat
