@@ -5,7 +5,7 @@ section .data
 	fzn equ 2				; number of phrases
 	base equ 10				; print in base 10
 	min equ 1				; start at 1
-	max equ 100000000				; end at 100
+	max equ 100				; end at 100
 	
 section .text
 	global _start
