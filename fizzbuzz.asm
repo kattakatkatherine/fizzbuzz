@@ -1,54 +1,108 @@
 section .data
-	fizzbuzz db "FizzBuzz", 0x0a, 0x00
-	fizz db "Fizz", 0x0a, 0x00
-	buzz db "Buzz", 0x0a, 0x00
-	num db "%d", 0x0a, 0x00
+    fizz db "Fizz"          ; fizz when n%3=0
+    flen equ $ - fizz
+    fval equ 3
+
+    buzz db "Buzz"          ; buzz when n%5=0
+    blen equ $ - buzz
+    bval equ 5
+
+    min equ 1               ; start at 1
+    max equ 100             ; end at 100
+    base equ 10             ; print output in base 10
+    
+    newln db 0x0a
 
 section .text
-	global main
-	extern printf
+    global _start
 
-main:
-	mov eax, 0				; start counter
+_start:
+    mov eax, min-1          ; start counter
+    mov ebp, esp            ; preserve esp
 
-iterate:
-	inc eax					; increment counter
+.loop:
+    mov esp, ebp            ; restore esp
+    cmp eax, max            ; counter at max? 
+    jnl .exit               ; then exit
+    inc eax                 ; increment counter
+    xor ebx, ebx            ; clear fizz/buzz indicator
 
-	mov ecx, 15				; divisible by 15?
-	mov ebx, fizzbuzz		; then fizzbuzz
-	call compare
+    push fizz               ; "Fizz"
+    push flen               ; length
+    mov ecx, fval           ; divisible?
+    call .compare           ; then print
 
-	mov ecx, 3				; divisible by 3?
-	mov ebx, fizz			; then fizz
-	call compare
+    push buzz               ; "Buzz"
+    push blen               ; length
+    mov ecx, bval           ; divisible?
+    call .compare           ; then print
 
-	mov ecx, 5				; divisible by 5?
-	mov ebx, buzz			; then buzz
-	call compare
+    cmp ebx, 0              ; fizz/buzz?
+    jne .newline            ; then repeat
 
-	mov ebx, num			; otherwise, print the number
+    pushad                  ; preserve registers
+    mov ebx, base           ; base to convert to
+    xor ecx, ecx            ; start counter
 
-print:
-	push eax				; preserve counter
-	mov ebp, esp			; preserve esp
-	push ebx				; push string
-	call printf				; print string
-	mov esp, ebp			; restore esp
-	pop eax					; restore eax
+.toascii:
+    inc ecx                 ; increment counter
+    xor edx, edx            ; clear edx
+    div ebx                 ; divide number by base
+    push edx                ; push the remainder
 
-	cmp eax, 100			; counter < 100?
-	jl iterate				; then repeat
+    cmp eax, 0              ; pushed all digits?
+    jne .toascii            ; repeat if not
 
-exit:
-	mov eax, 1				; sys_exit
-	mov ebx, 0				; success
-	int 0x80				; syscall
+.printnum:
+    pop edx                 ; pop digit
+    mov ebp, esp            ; preserve esp
 
-compare:
-	xor edx, edx
-	push eax				; preserve counter
-	div ecx					; divide counter by value
-	pop eax					; restore counter
-	cmp edx, 0				; remainder is 0?
-	je print				; then print
-	ret						; return
+    sub esp, 4              ; allocate space in stack
+    mov [esp], edx          ; move digit to esp
+    add [esp], byte '0'     ; convert digit to ascii
+    push esp                ; string
+    push 1                  ; length
+    call .print             ; print
+
+    mov esp, ebp            ; restore esp
+    loop .printnum          ; loop
+    mov esp, ebp            ; restore esp
+    popad                   ; restore registers
+
+.newline:
+    push dword newln        ; newline
+    push 1                  ; length
+    call .print             ; print
+
+    jmp .loop               ; repeat
+
+.exit:
+    mov eax, 1              ; sys_exit
+    xor ebx, ebx            ; success
+    int 0x80                ; syscall
+
+.compare:
+    pushad                  ; preserve registers
+    xor edx, edx            ; clear edx
+    div ecx                 ; divide
+    cmp edx, 0              ; remainder?
+    popad                   ; restore registers
+    jne .return             ; then don't print
+
+.print:
+    pushad                  ; preserve registers
+    mov ebp, esp            ; preserve esp
+    add esp, 36             ; align stack
+
+    mov eax, 4              ; sys_write
+    mov ebx, 1              ; stdout
+    pop edx                 ; string
+    pop ecx                 ; length
+    int 0x80                ; syscall
+
+    mov esp, ebp            ; restore esp
+    popad                   ; restore registers
+    inc ebx                 ; set fizz/buzz indicator 
+
+.return:
+    ret                     ; return
