@@ -2,8 +2,8 @@ section .data
     fizzbuzz: dd "Fizz", 4, 3 
               dd "Buzz", 4, 5
 
-    fzn equ 2               ; number of phrases
-    base equ 10             ; print in base 10
+    fzn equ 2               ; two phrases
+    base equ 10             ; base 10
     min equ 1               ; start at 1
     max equ 100             ; end at 100
     
