@@ -1,2 +1,2 @@
 # FizzBuzz
-FizzBuzz in assembly (with printf).
+FizzBuzz in assembly.
