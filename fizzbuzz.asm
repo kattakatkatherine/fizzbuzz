@@ -1,18 +1,12 @@
 section .data
-    fizz db "Fizz"          ; fizz when n%3=0
-    flen equ $ - fizz
-    fval equ 3
+    fizzbuzz: dd "Fizz", 4, 3 
+              dd "Buzz", 4, 5
 
-    buzz db "Buzz"          ; buzz when n%5=0
-    blen equ $ - buzz
-    bval equ 5
-
+    fzn equ 2               ; number of phrases
+    base equ 10             ; print in base 10
     min equ 1               ; start at 1
     max equ 100             ; end at 100
-    base equ 10             ; print output in base 10
     
-    newln db 0x0a
-
 section .text
     global _start
 
@@ -21,21 +15,23 @@ _start:
     mov ebp, esp            ; preserve esp
 
 .loop:
-    mov esp, ebp            ; restore esp
     cmp eax, max            ; counter at max? 
     jnl .exit               ; then exit
-    inc eax                 ; increment counter
+
+    mov esp, ebp            ; restore esp
     xor ebx, ebx            ; clear fizz/buzz indicator
+    mov edx, fizzbuzz       ; set array
+    inc eax                 ; increment counter
 
-    push fizz               ; "Fizz"
-    push flen               ; length
-    mov ecx, fval           ; divisible?
+.top:
+    push edx                ; string
+    push dword [4+edx]      ; length
+    mov ecx, [8+edx]        ; divisible?
     call .compare           ; then print
-
-    push buzz               ; "Buzz"
-    push blen               ; length
-    mov ecx, bval           ; divisible?
-    call .compare           ; then print
+    
+    add edx, 12             ; add offset
+    cmp edx, fizzbuzz+fzn*12; done?
+    jl .top                 ; repeat
 
     cmp ebx, 0              ; fizz/buzz?
     jne .newline            ; then repeat
@@ -66,11 +62,11 @@ _start:
 
     mov esp, ebp            ; restore esp
     loop .printnum          ; loop
-    mov esp, ebp            ; restore esp
     popad                   ; restore registers
 
 .newline:
-    push dword newln        ; newline
+    mov [esp], dword 0x0a   ; move newline to esp
+    push esp                ; newline
     push 1                  ; length
     call .print             ; print
 
